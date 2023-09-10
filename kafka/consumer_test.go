@@ -18,12 +18,13 @@ func TestKafka_CreateConsumer(t *testing.T) {
 	}
 	// Get message consumed
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(1)
 	go func() {
 		// go routine for init consumer
 		kafka.CreateConsumer(&consumerGroupHandler)
 		wg.Done()
 	}()
+	wg.Add(1)
 	go func() {
 		// go routine for get message from channel
 		log.Logger.Debug().Msg("read message from consumer channel")

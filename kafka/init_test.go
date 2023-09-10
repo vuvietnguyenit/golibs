@@ -19,7 +19,7 @@ func InitKafkaInstance() *Kafka {
 			Producer: struct {
 				Topics         []string
 				GroupReBalance string
-			}{Topics: []string{"producer-topic"}, GroupReBalance: "roundrobin"},
+			}{Topics: []string{"test"}, GroupReBalance: "roundrobin"},
 			Consumer: struct {
 				Topics        []string
 				StartOffset   int64

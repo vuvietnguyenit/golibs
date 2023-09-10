@@ -10,6 +10,7 @@ import (
 )
 
 type ConsumerGroupHandler struct {
+	Kafka
 	ready       chan bool
 	messageChan chan *sarama.ConsumerMessage
 }
