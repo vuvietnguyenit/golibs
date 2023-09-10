@@ -16,9 +16,6 @@ func TestKafka_CreateConsumer(t *testing.T) {
 		ready:       make(chan bool),
 		messageChan: make(chan *sarama.ConsumerMessage),
 	}
-	// Create async producer chan
-	// channel here is received message for produce topic
-	producer := kafka.CreateAsyncProducer()
 
 	// Get message consumed
 	wg := &sync.WaitGroup{}
@@ -35,19 +32,10 @@ func TestKafka_CreateConsumer(t *testing.T) {
 			select {
 			case msg := <-consumerGroupHandler.messageChan:
 				// create message for producer
-				messageProduce := sarama.ProducerMessage{
-					Topic: kafka.KafkaProperties.Producer.Topics[0],
-					Value: sarama.StringEncoder(msg.Value),
-				}
+				log.Logger.Info().Msgf("consume message: %s :: topic -> %s", string(msg.Value), msg.Topic)
 				// step produce message to topic
-				producer.Input() <- &messageProduce
 			}
 		}
-	}()
-	// create goroutine observer message producer
-	wg.Add(1)
-	go func() {
-		kafka.AsyncProducerObserver(producer)
 	}()
 	wg.Wait()
 

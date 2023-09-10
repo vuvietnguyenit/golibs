@@ -6,20 +6,18 @@ import (
 	"testing"
 )
 
-func init() {
-	log.InitLogger(&log.Properties{Level: 0})
-
-}
-
 func InitKafkaInstance() *Kafka {
-	log.InitLogger(&log.Properties{Level: 0})
+	log.InitLogger(&log.Properties{
+		Level:          0,
+		PrefixFieldLog: "kafka",
+	})
 	kafka := Kafka{
 		KafkaProperties: &Properties{
 			Brokers: []string{"kafka.local:9192"},
 			Producer: struct {
 				Topics         []string
 				GroupReBalance string
-			}{Topics: []string{"test"}, GroupReBalance: "roundrobin"},
+			}{Topics: []string{"sample"}, GroupReBalance: "roundrobin"},
 			Consumer: struct {
 				Topics        []string
 				StartOffset   int64

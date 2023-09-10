@@ -13,12 +13,11 @@ func InitLogger(loggerProperties *Properties) {
 	output.FormatLevel = func(i interface{}) string {
 		return fmt.Sprintf("%s", strings.ToUpper(fmt.Sprintf("%s", i)))
 	}
-
 	output.FormatMessage = func(i interface{}) string {
-		return fmt.Sprintf("vti_msg=\"%s\"", fmt.Sprintf("%s", i))
+		return fmt.Sprintf("%s_msg=\"%s\"", loggerProperties.PrefixFieldLog, fmt.Sprintf("%s", i))
 	}
 	output.FormatFieldName = func(i interface{}) string {
-		return fmt.Sprintf("vti_%s=", i)
+		return fmt.Sprintf("%s_%s=", loggerProperties.PrefixFieldLog, i)
 	}
 	log := zerolog.New(output).
 		Level(loggerProperties.Level).
