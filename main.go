@@ -1,20 +1,15 @@
-package kafka
+package main
 
 import (
 	"github.com/IBM/sarama"
+	"golibs/kafka"
 	"golibs/log"
-	"testing"
 )
 
-func init() {
+func main() {
 	log.InitLogger(&log.Properties{Level: 0})
-
-}
-
-func InitKafkaInstance() *Kafka {
-	log.InitLogger(&log.Properties{Level: 0})
-	kafka := Kafka{
-		KafkaProperties: &Properties{
+	kafka := kafka.Kafka{
+		KafkaProperties: &kafka.Properties{
 			Brokers: []string{"kafka.local:9192"},
 			Producer: struct {
 				Topics         []string
@@ -27,10 +22,5 @@ func InitKafkaInstance() *Kafka {
 			}{Topics: []string{"sample"}, StartOffset: sarama.OffsetOldest, ConsumerGroup: "group_test"},
 		},
 	}
-	return &kafka
-}
-
-func TestInitConnection(t *testing.T) {
-	kafka := InitKafkaInstance()
 	kafka.InitConnection()
 }

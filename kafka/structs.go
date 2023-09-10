@@ -1,10 +1,14 @@
 package kafka
 
 type Properties struct {
-	Brokers []string
-	Options struct {
+	Brokers  []string
+	Producer struct {
+		Topics         []string
 		GroupReBalance string
-		StartOffset    int64
 	}
-	ConsumerGroup string
+	Consumer struct {
+		Topics        []string
+		StartOffset   int64
+		ConsumerGroup string
+	}
 }

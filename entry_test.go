@@ -1,7 +1,6 @@
-package golibs
+package main
 
 import (
-	"golibs/kafka"
 	"golibs/log"
 	"testing"
 )
@@ -9,5 +8,4 @@ import (
 func TestEntrypoint(t *testing.T) {
 	// init logger first
 	log.InitLogger(&log.Properties{Level: 0})
-	kafka.CreateConsumer()
 }
