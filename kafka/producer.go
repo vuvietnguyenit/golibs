@@ -4,65 +4,38 @@ import (
 	"github.com/IBM/sarama"
 	"golibs/log"
 	"os"
-	"os/signal"
-	"sync"
 )
 
 type ProducerHandler struct {
 	SendChann chan *sarama.ProducerMessage
 }
+type AsyncProducer interface {
+	CreateAsyncProducer()
+	AsyncProducerObserver()
+}
 
-var (
-	wg                                  sync.WaitGroup
-	enqueued, successes, producerErrors int
-)
-
-func (k *Kafka) CreateAsyncProducer(producerHandle *ProducerHandler) {
+func (k *Kafka) CreateAsyncProducer() sarama.AsyncProducer {
+	k.KafkaSaramaConfig.Producer.Return.Successes = true
+	k.KafkaSaramaConfig.Producer.Return.Errors = true
 	producer, err := sarama.NewAsyncProducer(k.KafkaProperties.Brokers, k.KafkaSaramaConfig)
 	if err != nil {
 		log.Logger.Error().Msg(err.Error())
 		os.Exit(1)
 	}
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-
-	wg.Add(1)
-	go func() {
-		log.Logger.Debug().Msg("read success goroutine")
-		defer wg.Done()
-		for range producer.Successes() {
-			successes++
-		}
-	}()
-	wg.Add(1)
-	go func() {
-		log.Logger.Debug().Msg("read error goroutine")
-		defer wg.Done()
-		for err := range producer.Errors() {
-			log.Logger.Error().Msg(err.Error())
-			producerErrors++
-		}
-	}()
-ProducerLoop:
+	return producer
+}
+func (k *Kafka) AsyncProducerObserver(producer sarama.AsyncProducer) {
 	for {
-		message := &sarama.ProducerMessage{Topic: k.KafkaProperties.Producer.Topics[0], Value: sarama.StringEncoder("testing 123")}
 		select {
-		case producer.Input() <- message:
-			enqueued++
-
-		case <-signals:
-			producer.AsyncClose() // Trigger a shutdown of the producer.
-			break ProducerLoop
+		case err := <-producer.Errors():
+			log.Logger.Error().Msgf("Failed to produce message %v", err)
+		case succ := <-producer.Successes():
+			log.Logger.Info().Msgf("produce success [topic|key|offset]: [%s|%v|%d]", succ.Topic, succ.Key, succ.Offset)
 		}
 	}
-
-	wg.Wait()
-
-	log.Logger.Info().Msgf("Successfully produced: %d; errors: %d", successes, producerErrors)
-
 }
 
-func (k *Kafka) CreateProducerChannel() {
-
+func (k *Kafka) CreateProducerChannel() chan<- *sarama.ProducerMessage {
+	producerChan := k.CreateAsyncProducer()
+	return producerChan.Input()
 }
