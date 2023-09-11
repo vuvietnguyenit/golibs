@@ -7,17 +7,21 @@ import (
 	"sync"
 )
 
-func (k *Kafka) CreateAsyncProducer() sarama.AsyncProducer {
-	k.KafkaSaramaConfig.Producer.Return.Successes = true
-	k.KafkaSaramaConfig.Producer.Return.Errors = true
-	producer, err := sarama.NewAsyncProducer(k.KafkaProperties.Brokers, k.KafkaSaramaConfig)
+type AsyncProducer struct {
+	KafkaInstance *Kafka
+}
+
+func (k *AsyncProducer) Create() sarama.AsyncProducer {
+	k.KafkaInstance.KafkaSaramaConfig.Producer.Return.Successes = true
+	k.KafkaInstance.KafkaSaramaConfig.Producer.Return.Errors = true
+	producer, err := sarama.NewAsyncProducer(k.KafkaInstance.KafkaProperties.Brokers, k.KafkaInstance.KafkaSaramaConfig)
 	if err != nil {
 		log.Logger.Error().Msg(err.Error())
 		os.Exit(1)
 	}
 	return producer
 }
-func (k *Kafka) AsyncProducerObserver(producer sarama.AsyncProducer) {
+func (k *AsyncProducer) Observer(producer sarama.AsyncProducer) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
@@ -31,9 +35,4 @@ func (k *Kafka) AsyncProducerObserver(producer sarama.AsyncProducer) {
 			}
 		}
 	}()
-}
-
-func (k *Kafka) CreateProducerChannel() chan<- *sarama.ProducerMessage {
-	producerChan := k.CreateAsyncProducer()
-	return producerChan.Input()
 }
