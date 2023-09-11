@@ -4,15 +4,8 @@ import (
 	"github.com/IBM/sarama"
 	"golibs/log"
 	"os"
+	"sync"
 )
-
-type ProducerHandler struct {
-	SendChann chan *sarama.ProducerMessage
-}
-type AsyncProducer interface {
-	CreateAsyncProducer()
-	AsyncProducerObserver()
-}
 
 func (k *Kafka) CreateAsyncProducer() sarama.AsyncProducer {
 	k.KafkaSaramaConfig.Producer.Return.Successes = true
@@ -25,14 +18,19 @@ func (k *Kafka) CreateAsyncProducer() sarama.AsyncProducer {
 	return producer
 }
 func (k *Kafka) AsyncProducerObserver(producer sarama.AsyncProducer) {
-	for {
-		select {
-		case err := <-producer.Errors():
-			log.Logger.Error().Msgf("Failed to produce message %v", err)
-		case succ := <-producer.Successes():
-			log.Logger.Info().Msgf("produce success [topic|key|offset]: [%s|%v|%d]", succ.Topic, succ.Key, succ.Offset)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		log.Logger.Debug().Msg("start thread for observer msg produce")
+		for {
+			select {
+			case err := <-producer.Errors():
+				log.Logger.Error().Msgf("failed to produce message %v", err)
+			case succ := <-producer.Successes():
+				log.Logger.Info().Msgf("produce success [topic|key|offset]: [%s|%v|%d]", succ.Topic, succ.Key, succ.Offset)
+			}
 		}
-	}
+	}()
 }
 
 func (k *Kafka) CreateProducerChannel() chan<- *sarama.ProducerMessage {
