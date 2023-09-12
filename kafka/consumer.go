@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"github.com/IBM/sarama"
-	"golibs/log"
+	"github.com/rs/zerolog/log"
 	"os"
 )
 
@@ -10,7 +10,7 @@ func (k *Kafka) CreateConsumerGroup() sarama.ConsumerGroup {
 	log.Logger.Debug().Msg("start creating consumer...")
 	client, err := sarama.NewConsumerGroup(k.KafkaProperties.Brokers, k.KafkaProperties.Consumer.ConsumerGroup, k.KafkaSaramaConfig)
 	if err != nil {
-		log.Logger.Error().Msg(err.Error())
+		log.Error().Msg(err.Error())
 		os.Exit(1)
 	}
 	return client

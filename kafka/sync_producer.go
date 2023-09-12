@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"github.com/IBM/sarama"
-	"golibs/log"
+	"github.com/rs/zerolog/log"
 	"os"
 )
 
@@ -13,7 +13,7 @@ type SyncProducer struct {
 func (s *SyncProducer) Create() *sarama.SyncProducer {
 	producer, err := sarama.NewSyncProducer(s.kafkaInstance.KafkaProperties.Brokers, s.kafkaInstance.KafkaSaramaConfig)
 	if err != nil {
-		log.Logger.Error().Msg(err.Error())
+		log.Error().Msg(err.Error())
 		os.Exit(1)
 	}
 	defer func() {

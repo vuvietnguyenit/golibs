@@ -1,4 +1,4 @@
-module golibs
+module github.com/vuvietnguyenit/golibs
 
 go 1.18
 

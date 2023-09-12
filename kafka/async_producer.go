@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"github.com/IBM/sarama"
-	"golibs/log"
+	"github.com/vuvietnguyenit/golibs/log"
 	"os"
 	"sync"
 )
