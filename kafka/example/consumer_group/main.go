@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/IBM/sarama"
-	"golibs/kafka/example"
-	"golibs/log"
+	"github.com/vuvietnguyenit/golibs/kafka/example"
+	"github.com/vuvietnguyenit/golibs/log"
 	"sync"
 )
 
