@@ -2,8 +2,8 @@ package example
 
 import (
 	"github.com/IBM/sarama"
-	"golibs/kafka"
-	"golibs/log"
+	"github.com/vuvietnguyenit/golibs/kafka"
+	"github.com/vuvietnguyenit/golibs/log"
 )
 
 func InitKafkaInstance() *kafka.Kafka {

@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/IBM/sarama"
 	"github.com/google/uuid"
-	"golibs/kafka"
-	"golibs/kafka/example"
+	"github.com/vuvietnguyenit/golibs/kafka"
+	"github.com/vuvietnguyenit/golibs/kafka/example"
 	"time"
 )
 
