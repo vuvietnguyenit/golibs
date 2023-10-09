@@ -31,7 +31,7 @@ func (k *AsyncProducer) Observer(producer sarama.AsyncProducer) {
 			case err := <-producer.Errors():
 				log.Logger.Error().Msgf("failed to produce message %v", err)
 			case succ := <-producer.Successes():
-				log.Logger.Info().Msgf("produce success [topic|key|offset]: [%s|%v|%d]", succ.Topic, succ.Key, succ.Offset)
+				log.Logger.Debug().Msgf("produce success [topic|key|offset]: [%s|%v|%d]", succ.Topic, succ.Key, succ.Offset)
 			}
 		}
 	}()
