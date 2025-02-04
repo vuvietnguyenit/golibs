@@ -1,0 +1,25 @@
+# Go binaries
+/bin/
+/obj/
+
+# Go workspace
+/.idea/
+/.vscode/
+/*.exe
+/*.exe~
+/*.out
+/*.test
+
+# Vendor directory
+/vendor/
+
+# Dependency directories
+/gopath/
+# Go modules
+
+# Coverage files
+*.out
+
+# IDE specific files
+*.swp
+*~.
