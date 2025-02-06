@@ -9,6 +9,7 @@ func (rt customRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 	return rt(req)
 }
 
+// A wrapper function that allows chaining multiple HTTP RoundTrips together. This enables the use of multiple middleware RoundTrips simultaneously.
 func Chain(rt http.RoundTripper, middlewares ...Middleware) http.RoundTripper {
 	if rt == nil {
 		rt = http.DefaultTransport

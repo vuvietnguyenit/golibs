@@ -1,13 +1,11 @@
 package roundtrip
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/vuvietnguyenit/golibs/pkg/httpstat"
 )
 
 const (
@@ -19,43 +17,61 @@ const (
 	ContentTypeMultipartForm = "multipart/form-data"
 )
 
-func selectLogType(contentType string, logger *zerolog.Event, bodyData []byte, key string) error {
+func selectLogType(contentType string, logger *zerolog.Event, bodyData []byte, key string, raw bool) error {
+	if raw {
+		logger.Bytes(key, bodyData)
+		return nil
+	}
 	switch contentType {
 	case ContentTypeJSON:
 		logger.RawCBOR(key, bodyData)
 	case ContentTypeXML:
 	case ContentTypeHTML:
+
 	case ContentTypePlainText:
+		logger.Bytes(key, bodyData)
+
 	case ContentTypeForm:
 		logger.RawCBOR(key, bodyData)
 	case ContentTypeMultipartForm:
 	default:
-		return fmt.Errorf("received unknown content type")
+		logger.Str(key, string(bodyData))
 	}
 	return nil
 }
 
-func logRespBodyData(resp *http.Response, logger *zerolog.Event, isDumpBody bool) error {
+func logRespBodyData(resp *http.Response, logger *zerolog.Event, isDumpBody bool, rawBody *bool) error {
 	o, err := httputil.DumpResponse(resp, isDumpBody)
 	if err != nil {
 		return err
 	}
-	err = selectLogType(resp.Header.Get("Content-Type"), logger, o, "response_data")
+	err = selectLogType(resp.Header.Get("Content-Type"), logger, o, "response_data", *rawBody)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// CustomTimer takes a writer and will output a request duration.
-func LoggingResp(logger *zerolog.Logger, printResp bool, printDuration bool) Middleware {
+func AddHeader(key, value string) Middleware {
+	return func(rt http.RoundTripper) http.RoundTripper {
+		return customRoundTripper(func(req *http.Request) (*http.Response, error) {
+			header := req.Header
+			if header == nil {
+				header = make(http.Header)
+			}
+
+			header.Set(key, value)
+			return rt.RoundTrip(req)
+		})
+	}
+}
+
+// It is an HTTP RoundTripper that enables logging request and response data in JSON format using the zerolog library: https://github.com/rs/zerolog. If rawRespData is enabled, all response body data returned from upstream will not be encoded (CBOR encoded).
+func LoggingResp(logger *zerolog.Logger, printResp bool, printDuration bool, rawRespData bool) Middleware {
 	return func(rt http.RoundTripper) http.RoundTripper {
 		return customRoundTripper(func(req *http.Request) (resp *http.Response, err error) {
+			startTime := time.Now()
 			defer func() {
-				var result httpstat.Result
-				ctx := httpstat.WithHTTPStat(req.Context(), &result)
-				req = req.WithContext(ctx)
-
 				var log = logger.Info()
 				log.Str("method", req.Method).
 					Stringer("url", req.URL).
@@ -65,14 +81,13 @@ func LoggingResp(logger *zerolog.Logger, printResp bool, printDuration bool) Mid
 					Int64("response_byte", resp.ContentLength)
 
 				if printDuration {
-					result.End(time.Now())
-					log.Dur("duration", result.GetTotalDur())
+					log.Dur("duration", time.Since(startTime))
 				}
 				if printResp {
 					if resp.Body != nil {
-						logRespBodyData(resp, log, true)
+						logRespBodyData(resp, log, true, &rawRespData)
 					} else {
-						logRespBodyData(resp, log, false)
+						logRespBodyData(resp, log, false, nil)
 					}
 				}
 				log.Msg("")

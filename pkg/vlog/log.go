@@ -8,18 +8,15 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// This structure is used to declare the information of attributes utilized during logging.
+// It is applied immediately when initializing the app's logging instance.
 type LoggerConfig struct {
-	Level              zerolog.Level
-	TimeFormat         string
-	IncludesCaller     bool
-	EnableHTTPTraceLog bool
+	Level          zerolog.Level
+	TimeFormat     string // Time format set for log line
+	IncludesCaller bool   //If enabled, the log line output will include the file information where the logging is executed.
 }
 
-type JsonLogger struct {
-	LegacyHandler *zerolog.Logger
-}
-
-func createZeroLogInst(c LoggerConfig) zerolog.Logger {
+func createZeroLogInst(c LoggerConfig) *zerolog.Logger {
 	logger := zerolog.New(os.Stdout).Level(zerolog.InfoLevel).With().Logger()
 	logger = logger.With().Timestamp().Logger()
 	if c.IncludesCaller {
@@ -29,14 +26,10 @@ func createZeroLogInst(c LoggerConfig) zerolog.Logger {
 		logger = logger.With().Caller().Logger()
 	}
 	logger = logger.Level(c.Level)
-	return logger
+	return &logger
 }
 
-func NewJsonLogger(c LoggerConfig) JsonLogger {
+func NewJsonLogger(c LoggerConfig) *zerolog.Logger {
 	l := createZeroLogInst(c)
-	// Create HTTP handlers
-
-	return JsonLogger{
-		LegacyHandler: &l,
-	}
+	return l
 }
