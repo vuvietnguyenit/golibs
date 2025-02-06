@@ -17,7 +17,6 @@ type LoggerConfig struct {
 
 type JsonLogger struct {
 	LegacyHandler *zerolog.Logger
-	HTTPHandler   HTTPHandler
 }
 
 func createZeroLogInst(c LoggerConfig) zerolog.Logger {
@@ -36,13 +35,8 @@ func createZeroLogInst(c LoggerConfig) zerolog.Logger {
 func NewJsonLogger(c LoggerConfig) JsonLogger {
 	l := createZeroLogInst(c)
 	// Create HTTP handlers
-	h := HTTPHandler{
-		printer: &HTTPPrinter{
-			zerolog: &l,
-		},
-	}
+
 	return JsonLogger{
 		LegacyHandler: &l,
-		HTTPHandler:   h,
 	}
 }
